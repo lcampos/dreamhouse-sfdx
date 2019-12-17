@@ -1,0 +1,28 @@
+name: Starting a new work item
+
+on:
+    project_card:
+        types: [moved]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check move from "TODO" to "IN PROGRESS"
+      id: check
+      uses: vazexqi/salesforcedx-kanban-actions/project_card-check-movement@master
+      with:
+          token: ${{ secrets.GITHUB_TOKEN}}
+          fromColumnId: ${{ github.event.changes.column_id.from }}
+          fromColumnName: TODO
+          toColumnId: ${{ github.event.project_card.column_id }}
+          toColumnName: IN PROGRESS
+    - uses: actions/checkout@v1
+    - name: Run a one-line script
+      run: echo Hello, world!
+    - name: Run a multi-line script
+      run: |
+        echo Add other actions to build,
+        echo test, and deploy your project.
