@@ -31,6 +31,8 @@ jobs:
             run: sfdx plugins:install salesforce-alm
           - name: Install salesforcedx
             run: sfdx plugins:install salesforcedx
+          - name: Run sfdx plugins core
+            run: sfdx plugins --core
           - name: Create scratch org
             run: sfdx force:org:create --definitionfile=config/project-scratch-def.json --setalias=scratch-org --setdefaultusername
           - name: Push source
