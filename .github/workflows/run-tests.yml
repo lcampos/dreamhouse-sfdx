@@ -6,30 +6,38 @@ on:
 
 jobs:
     build:
-        runs-on: ubuntu-latest
+        runs-on: windows-latest
+
+        strategy:
+          matrix:
+            node-version: [10.x, 12.x]
 
         steps:
+          - uses: actions/checkout@v2
+          - name: Use Node.js ${{ matrix.node-version }}
+            uses: actions/setup-node@v1
+            with:
+              node-version: ${{ matrix.node-version }}
+          - run: npm install
+          - run: npm install -g sfdx-cli
+          - run: npm install 
           - uses: actions/checkout@v1
           - name: Populate auth file with SFDX_URL secret
             shell: bash
             run: echo ${{ secrets.DEV_HUB_SFDXURL}} > ./SFDX_URL_STORE.txt
           - name: Authenticate against dev hub
-            uses: forcedotcom/salesforcedx-actions@master
-            with:
-                args: force:auth:sfdxurl:store --sfdxurlfile=./SFDX_URL_STORE.txt --setalias=devhub --setdefaultdevhubusername
+            run: sfdx force:auth:sfdxurl:store --sfdxurlfile=./SFDX_URL_STORE.txt --setalias=devhub --setdefaultdevhubusername
+          #- name: Install salesforcedx-alm
+          #  run: sfdx plugins:install salesforce-alm
+          #- name: Install salesforcedx
+          #  run: sfdx plugins:install salesforcedx
+          - name: Run sfdx plugins core
+            run: sfdx plugins --core
           - name: Create scratch org
-            uses: forcedotcom/salesforcedx-actions@master
-            with:
-                args: force:org:create --definitionfile=config/project-scratch-def.json --setalias=scratch-org --setdefaultusername
+            run: sfdx force:org:create --definitionfile=config/project-scratch-def.json --setalias=scratch-org --setdefaultusername
           - name: Push source
-            uses: forcedotcom/salesforcedx-actions@master
-            with:
-                args: force:source:push
+            run: sfdx force:source:push
           - name: Run tests
-            uses: forcedotcom/salesforcedx-actions@master
-            with:
-                args: force:apex:test:run --codecoverage --resultformat=tap
+            run: sfdx force:apex:test:run --codecoverage --resultformat=tap
           - name: Clean up scratch org
-            uses: forcedotcom/salesforcedx-actions@master
-            with:
-                args: force:org:delete --targetusername=scratch-org --noprompt
+            run: sfdx force:org:delete --targetusername=scratch-org --noprompt
